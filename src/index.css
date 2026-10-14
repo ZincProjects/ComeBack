@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0f1f1a;
+  --color-bg: #eef2f0;
+  --color-card: #ffffff;
+  --color-line: #d3dcd8;
+  --color-teal: #1d5f55;
+  --color-teal-soft: #e2eeeb;
+  --color-accent: #c24e0e;
+  --color-bright: #f28a4b;
+  --color-muted: #3e4f4a;
+  --color-ok-soft: #e1f0e7;
+  --color-warn-soft: #fcebdd;
+  --color-empty: #c9d3cf;
+  --color-ink-2: #1c332c;
+
+  --font-display: "Archivo", system-ui, sans-serif;
+  --font-sans: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    line-height: 1.5;
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.15;
+  }
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+  button {
+    cursor: pointer;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-teal);
+    outline-offset: 2px;
+  }
+  .on-dark :focus-visible {
+    outline-color: var(--color-bright);
+  }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.toast {
+  animation: toast-in 220ms ease-out;
+}
+@keyframes blink {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+.typing-dot {
+  animation: blink 1.2s infinite both;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+dialog::backdrop {
+  background: rgb(15 31 26 / 0.6);
+}

@@ -8,6 +8,7 @@ const USERNAME_RE = /^[a-z0-9_]{3,20}$/
 const MAX_ATTEMPTS_PER_HOUR = 10
 const ALLOWED_ORIGINS = new Set([
   'https://comeback-prototype.vercel.app',
+  'https://comeback-beta.vercel.app',
   'http://localhost:5173',
   'http://localhost:4173',
 ])

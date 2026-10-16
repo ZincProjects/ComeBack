@@ -1,4 +1,4 @@
-import { Info } from 'lucide-react'
+import { CircleUser } from 'lucide-react'
 import { TABS } from '../data'
 import { useApp } from '../state'
 import { Logo, StreakPill } from './brand'
@@ -22,10 +22,10 @@ export function MobileShell({ framed = false }: { framed?: boolean }) {
             <button
               type="button"
               onClick={() => setAboutOpen(true)}
-              aria-label="About this prototype"
+              aria-label="Account and about this prototype"
               className="grid h-11 w-11 place-items-center rounded-full text-white/85 hover:text-white"
             >
-              <Info className="h-5 w-5" aria-hidden="true" />
+              <CircleUser className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
         </div>

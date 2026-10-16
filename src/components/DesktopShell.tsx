@@ -1,7 +1,8 @@
-import { Info, Smartphone } from 'lucide-react'
+import { CircleUser, Info, Smartphone } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { TABS } from '../data'
 import { useApp } from '../state'
+import { useAuth } from '../auth'
 import { Logo, StreakPill } from './brand'
 import { MobileShell } from './MobileShell'
 import { DesktopPrimary, DesktopSide, TAB_ICONS } from './nav'
@@ -35,6 +36,7 @@ function PhoneFrame() {
 
 export function DesktopShell() {
   const { tab, setTab, phoneView, setPhoneView, setAboutOpen } = useApp()
+  const { username } = useAuth()
   const current = TABS.find((t) => t.id === tab)!
   return (
     <div className="flex min-h-dvh">
@@ -82,7 +84,18 @@ export function DesktopShell() {
         <button
           type="button"
           onClick={() => setAboutOpen(true)}
-          className="mt-auto flex min-h-11 items-center gap-2 rounded-lg px-3 text-left text-sm text-white/80 underline-offset-4 hover:text-white hover:underline"
+          className="mt-auto flex min-h-11 items-center gap-2.5 rounded-xl border border-white/15 px-3 py-2 text-left hover:bg-white/5"
+        >
+          <CircleUser className="h-5 w-5 shrink-0 text-bright" aria-hidden="true" />
+          <span className="min-w-0">
+            <span className="block truncate text-sm font-bold">{username ?? 'Guest'}</span>
+            <span className="block text-xs text-white/75">{username ? 'Account settings' : 'Create an account'}</span>
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setAboutOpen(true)}
+          className="mt-2 flex min-h-11 items-center gap-2 rounded-lg px-3 text-left text-sm text-white/80 underline-offset-4 hover:text-white hover:underline"
         >
           <Info className="h-4 w-4" aria-hidden="true" />
           About this prototype

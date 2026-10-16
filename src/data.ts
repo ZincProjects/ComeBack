@@ -135,9 +135,3 @@ export const REMIND_SLOTS = [
   { label: 'Before dinner', time: '19:00', display: '7pm' },
   { label: 'Late study break', time: '22:00', display: '10pm' },
 ]
-
-/**
- * Telegram invite link for the ACL Comeback Circle, e.g. 'https://t.me/+AbCdEf123'.
- * Leave empty to keep the in-app demo Join toggle.
- */
-export const TELEGRAM_CIRCLE_URL = ''

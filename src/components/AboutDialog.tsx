@@ -2,6 +2,8 @@ import { X } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { resetDemo } from '../lib/storage'
 import { useApp } from '../state'
+import { useAuth } from '../auth'
+import { AccountSection } from './AccountSection'
 
 const ISSUES = [
   { title: 'Delayed diagnosis', body: 'Ryan treated a torn ACL as a sprain with TCM for 5 years. Knee Check flags warning signs early.' },
@@ -17,6 +19,7 @@ const COMB = [
 
 export function AboutDialog() {
   const { aboutOpen, setAboutOpen } = useApp()
+  const { status } = useAuth()
   const ref = useRef<HTMLDialogElement>(null)
 
   useEffect(() => {
@@ -51,6 +54,8 @@ export function AboutDialog() {
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
+
+        <AccountSection onDone={() => setAboutOpen(false)} />
 
         <p className="text-muted">
           ComeBack is designed around <strong className="text-ink">Ryan</strong>, a student athlete who tore his ACL in
@@ -87,21 +92,21 @@ export function AboutDialog() {
         </div>
 
         <p className="rounded-xl bg-warn-soft p-3 text-sm">
-          <strong>Student prototype, not medical advice.</strong> All data is mock and stays on this device. Always see a
+          <strong>Student prototype, not medical advice.</strong> Content is mock data. Guest progress stays on this device; account progress is stored securely and only you can access it. Always see a
           qualified doctor or physiotherapist about an injury.
         </p>
 
         <div className="flex flex-wrap gap-2">
           <button
             type="button"
-            onClick={() => {
-              resetDemo()
+            onClick={async () => {
+              await resetDemo()
               window.location.hash = ''
               window.location.reload()
             }}
             className="min-h-11 rounded-xl border border-accent px-4 font-bold text-accent"
           >
-            Reset demo
+            {status === 'user' ? 'Reset my progress' : 'Reset demo'}
           </button>
           <button
             type="button"

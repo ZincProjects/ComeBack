@@ -1,7 +1,10 @@
 import { useEffect } from 'react'
 import { TABS } from './data'
 import { AppProvider, useApp } from './state'
+import { AuthProvider, useAuth } from './auth'
 import { AboutDialog } from './components/AboutDialog'
+import { AuthScreen } from './components/AuthScreen'
+import { Logo } from './components/brand'
 import { DesktopShell } from './components/DesktopShell'
 import { MobileShell } from './components/MobileShell'
 
@@ -40,10 +43,33 @@ function Shell() {
   )
 }
 
-export default function App() {
+function Splash() {
   return (
-    <AppProvider>
+    <div className="on-dark grid min-h-dvh place-items-center bg-ink" role="status">
+      <Logo className="text-[32px]" />
+      <span className="sr-only">Loading ComeBack…</span>
+    </div>
+  )
+}
+
+function Gate() {
+  const { status, userId } = useAuth()
+  useEffect(() => {
+    if (status === 'auth') document.title = 'Welcome · ComeBack'
+  }, [status])
+  if (status === 'loading') return <Splash />
+  if (status === 'auth') return <AuthScreen />
+  return (
+    <AppProvider key={userId ?? 'guest'}>
       <Shell />
     </AppProvider>
+  )
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <Gate />
+    </AuthProvider>
   )
 }

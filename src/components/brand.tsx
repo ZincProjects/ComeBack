@@ -21,7 +21,7 @@ export function StreakPill() {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-sm font-bold text-white">
       <FlameIcon className="h-4 w-4 text-bright" />
-      {streak}-day streak
+      {streak > 0 ? `${streak}-day streak` : 'Start your streak'}
     </span>
   )
 }

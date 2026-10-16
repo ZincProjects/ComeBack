@@ -1,57 +1,106 @@
 import { Check } from 'lucide-react'
 import { useId } from 'react'
-import { CONFIDENCE_NOTES, CONFIDENCE_TREND, MILESTONES, WEEK_DAYS, WEEK_FULL, WEEK_VALUES } from '../data'
+import { CONFIDENCE_NOTES, MILESTONES, WEEK_DAYS, WEEK_FULL } from '../data'
+import { addDays, dayFraction, phaseRange, planFor, startOfWeek, weekOf } from '../lib/plan'
 import { useApp } from '../state'
 import { Card, cx, PageHeading, SectionTitle } from '../components/ui'
 
-function describe(v: number) {
-  if (v >= 1) return 'full session'
-  if (v <= 0) return 'no session'
-  return `${Math.round(v * 100)}% of session`
+type DayBar = {
+  label: string
+  full: string
+  kind: 'done' | 'today' | 'missed' | 'rest' | 'future' | 'none'
+  value: number
+}
+
+function describe(d: DayBar) {
+  if (d.kind === 'rest') return 'rest day'
+  if (d.kind === 'none') return 'before your plan started'
+  if (d.kind === 'future') return 'coming up'
+  if (d.value >= 1) return 'full session'
+  if (d.value <= 0) return d.kind === 'today' ? 'not started yet' : 'missed'
+  return `${Math.round(d.value * 100)}% of session`
 }
 
 function WeekChart() {
-  const { todayFraction } = useApp()
-  const values = [...WEEK_VALUES, todayFraction]
-  const sessions = values.reduce((a, b) => a + b, 0)
+  const { programStart, today, log } = useApp()
+  const monday = startOfWeek(today)
+  const days: DayBar[] = Array.from({ length: 7 }, (_, i) => {
+    const date = addDays(monday, i)
+    const plan = planFor(programStart, date)
+    const f = dayFraction(plan, log)
+    const kind: DayBar['kind'] =
+      plan.week === 0
+        ? 'none'
+        : f === null
+          ? 'rest'
+          : date === today
+            ? 'today'
+            : date > today
+              ? 'future'
+              : f > 0
+                ? 'done'
+                : 'missed'
+    return { label: WEEK_DAYS[i], full: WEEK_FULL[i] + (date === today ? ' (today)' : ''), kind, value: f ?? 0 }
+  })
+  const scheduled = days.filter((d) => d.kind !== 'rest' && d.kind !== 'none')
+  const sessions = scheduled.reduce((a, d) => a + d.value, 0)
   return (
     <Card>
       <div className="flex items-baseline justify-between gap-2">
         <SectionTitle>Sessions this week</SectionTitle>
-        <p className="text-sm text-muted">{sessions.toFixed(1).replace('.0', '')} of 7</p>
+        <p className="text-sm text-muted">
+          {sessions.toFixed(1).replace('.0', '')} of {scheduled.length}
+        </p>
       </div>
       <div className="mt-4 flex h-36 items-end gap-2" aria-hidden="true">
-        {values.map((v, i) => {
-          const today = i === values.length - 1
-          const empty = v <= 0
+        {days.map((d, i) => {
+          const isToday = d.kind === 'today'
           return (
             <div key={i} className="flex h-full flex-1 flex-col items-center justify-end gap-1.5">
               <div className="flex w-full max-w-10 flex-1 items-end">
-                <div
-                  className={cx(
-                    'w-full rounded-md transition-[height] duration-300',
-                    today ? 'bg-accent' : empty ? 'bg-empty' : 'bg-teal',
-                  )}
-                  style={{ height: empty ? '6px' : `${Math.max(v * 100, 6)}%` }}
-                />
+                {d.kind === 'rest' || d.kind === 'none' ? (
+                  <span className="w-full text-center text-[11px] text-muted">{d.kind === 'rest' ? 'Rest' : ''}</span>
+                ) : d.kind === 'future' ? (
+                  <div className="h-full w-full rounded-md border-2 border-dashed border-line" />
+                ) : (
+                  <div
+                    className={cx(
+                      'w-full rounded-md transition-[height] duration-300',
+                      isToday ? 'bg-accent' : d.value > 0 ? 'bg-teal' : 'bg-empty',
+                    )}
+                    style={{ height: d.value > 0 ? `${Math.max(d.value * 100, 6)}%` : '6px' }}
+                  />
+                )}
               </div>
-              <span className={cx('text-xs', today ? 'font-bold text-ink' : 'text-muted')}>{WEEK_DAYS[i]}</span>
+              <span className={cx('text-xs', isToday ? 'font-bold text-ink' : 'text-muted')}>{d.label}</span>
             </div>
           )
         })}
       </div>
       <ul className="sr-only">
-        {values.map((v, i) => (
+        {days.map((d, i) => (
           <li key={i}>
-            {WEEK_FULL[i]}
-            {i === values.length - 1 ? ' (today)' : ''}: {describe(v)}
+            {d.full}: {describe(d)}
           </li>
         ))}
       </ul>
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted" aria-hidden="true">
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-teal" />Done</span>
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-accent" />Today (live)</span>
-        <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-sm bg-empty" />Missed</span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-teal" />
+          Done
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-accent" />
+          Today (live)
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-empty" />
+          Missed
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm border border-dashed border-muted" />
+          Coming up
+        </span>
       </div>
     </Card>
   )
@@ -99,16 +148,18 @@ function ConfidenceCheck() {
 }
 
 function Milestones() {
-  const nextIdx = MILESTONES.findIndex((m) => !m.done)
+  const { todayPlan } = useApp()
+  const milestones = MILESTONES.map((m) => ({ ...m, done: m.week === 0 || todayPlan.week > m.week }))
+  const nextIdx = milestones.findIndex((m) => !m.done)
   return (
     <Card>
       <SectionTitle>Milestones</SectionTitle>
       <ol className="mt-4 flex flex-col">
-        {MILESTONES.map((m, i) => {
+        {milestones.map((m, i) => {
           const next = i === nextIdx
           return (
             <li key={m.label} className="relative flex gap-3 pb-5 last:pb-0">
-              {i < MILESTONES.length - 1 && (
+              {i < milestones.length - 1 && (
                 <span
                   className={cx('absolute top-7 left-[13px] h-[calc(100%-28px)] w-0.5', m.done ? 'bg-teal' : 'bg-line')}
                   aria-hidden="true"
@@ -140,23 +191,38 @@ function Milestones() {
 }
 
 function TrendChart() {
-  const { confidence } = useApp()
-  const points = [...CONFIDENCE_TREND, ...(confidence ? [{ label: 'Today', value: confidence }] : [])]
+  const { confidenceLog, programStart, today } = useApp()
+  const thisMonday = startOfWeek(today)
+  // Weekly average of logged confidence over the last 4 calendar weeks.
+  const weeks = [3, 2, 1, 0].map((ago) => {
+    const monday = addDays(thisMonday, -7 * ago)
+    const vals = Array.from({ length: 7 }, (_, i) => confidenceLog[addDays(monday, i)]).filter(
+      (v): v is number => typeof v === 'number',
+    )
+    const wk = weekOf(programStart, monday < programStart ? programStart : monday)
+    return {
+      label: ago === 0 ? 'This wk' : addDays(monday, 6) < programStart ? '—' : `Wk ${wk}`,
+      value: vals.length ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : null,
+      current: ago === 0,
+    }
+  })
+  const points = weeks
+    .map((w, i) => ({ ...w, i }))
+    .filter((w): w is typeof w & { value: number } => w.value !== null)
   const W = 320
   const H = 170
   const padL = 28
   const padR = 16
   const padT = 14
   const padB = 30
-  const slots = CONFIDENCE_TREND.length + 1
-  const x = (i: number) => padL + (i * (W - padL - padR)) / (slots - 1)
+  const x = (i: number) => padL + (i * (W - padL - padR)) / (weeks.length - 1)
   const y = (v: number) => padT + ((5 - v) * (H - padT - padB)) / 4
-  const path = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${x(i)},${y(p.value)}`).join(' ')
-  const summary = points.map((p) => `${p.label}: ${p.value}`).join(', ')
+  const path = points.map((p, k) => `${k === 0 ? 'M' : 'L'}${x(p.i)},${y(p.value)}`).join(' ')
+  const summary = points.length ? points.map((p) => `${p.label}: ${p.value}`).join(', ') : 'no check-ins yet'
   return (
     <Card>
       <SectionTitle>Confidence trend</SectionTitle>
-      <p className="text-sm text-muted">Average self-rating, 1 to 5</p>
+      <p className="text-sm text-muted">Weekly average of your check-ins, 1 to 5</p>
       <svg viewBox={`0 0 ${W} ${H}`} className="mt-3 w-full" role="img" aria-label={`Confidence trend. ${summary}`}>
         {[1, 2, 3, 4, 5].map((v) => (
           <g key={v}>
@@ -166,55 +232,51 @@ function TrendChart() {
             </text>
           </g>
         ))}
-        <path d={path} fill="none" stroke="var(--color-teal)" strokeWidth={2.5} strokeLinejoin="round" />
-        {points.map((p, i) => {
-          const today = p.label === 'Today'
-          return (
-            <circle
-              key={p.label}
-              cx={x(i)}
-              cy={y(p.value)}
-              r={today ? 6 : 4.5}
-              fill={today ? 'var(--color-accent)' : 'var(--color-teal)'}
-              stroke="white"
-              strokeWidth={2}
-            />
-          )
-        })}
-        {!confidence && (
-          <circle
-            cx={x(slots - 1)}
-            cy={y(3)}
-            r={6}
-            fill="none"
-            stroke="var(--color-muted)"
-            strokeDasharray="3 3"
-            strokeWidth={1.5}
-          />
+        {points.length > 1 && (
+          <path d={path} fill="none" stroke="var(--color-teal)" strokeWidth={2.5} strokeLinejoin="round" />
         )}
-        {[...CONFIDENCE_TREND.map((p) => p.label), 'Today'].map((l, i) => (
+        {points.map((p) => (
+          <circle
+            key={p.i}
+            cx={x(p.i)}
+            cy={y(p.value)}
+            r={p.current ? 6 : 4.5}
+            fill={p.current ? 'var(--color-accent)' : 'var(--color-teal)'}
+            stroke="white"
+            strokeWidth={2}
+          />
+        ))}
+        {weeks.map((w, i) => (
           <text
-            key={l}
+            key={i}
             x={x(i)}
             y={H - 8}
             textAnchor="middle"
             fontSize={11}
-            fontWeight={l === 'Today' ? 700 : 400}
-            fill={l === 'Today' ? 'var(--color-ink)' : 'var(--color-muted)'}
+            fontWeight={w.current ? 700 : 400}
+            fill={w.current ? 'var(--color-ink)' : 'var(--color-muted)'}
           >
-            {l}
+            {w.label}
           </text>
         ))}
       </svg>
-      {!confidence && <p className="mt-1 text-sm text-muted">Log today's confidence to add it to the trend.</p>}
+      {!confidenceLog[today] && (
+        <p className="mt-1 text-sm text-muted">Log today's confidence to add it to the trend.</p>
+      )}
     </Card>
   )
 }
 
 export function ProgressMain({ desktop = false }: { desktop?: boolean }) {
+  const { todayPlan, streak } = useApp()
+  const { phase } = todayPlan
   return (
     <div className="flex flex-col gap-5">
-      <PageHeading title="Week 7 of your comeback" sub="Small sessions add up. Here's how this week is going." />
+      <PageHeading
+        eyebrow={`Phase ${phase.number}: ${phase.name} · ${phaseRange(phase)}`}
+        title={`Week ${todayPlan.week} of your comeback`}
+        sub={streak > 0 ? `${streak}-day streak. Small sessions add up.` : "Finish today's session to start your streak."}
+      />
       <WeekChart />
       <ConfidenceCheck />
       {!desktop && <Milestones />}

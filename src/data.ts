@@ -1,7 +1,8 @@
-export type TabId = 'check' | 'rehab' | 'buddy' | 'progress'
+export type TabId = 'check' | 'learn' | 'rehab' | 'buddy' | 'progress'
 
 export const TABS: { id: TabId; label: string; title: string }[] = [
   { id: 'check', label: 'Check', title: 'Knee Check' },
+  { id: 'learn', label: 'Learn', title: 'ACL 101' },
   { id: 'rehab', label: 'Rehab', title: "Today's Rehab" },
   { id: 'buddy', label: 'Buddy', title: 'Recovery Buddy' },
   { id: 'progress', label: 'Progress', title: 'Your Progress' },
@@ -134,3 +135,9 @@ export const REMIND_SLOTS = [
   { label: 'Before dinner', time: '19:00', display: '7pm' },
   { label: 'Late study break', time: '22:00', display: '10pm' },
 ]
+
+/**
+ * Telegram invite link for the ACL Comeback Circle, e.g. 'https://t.me/+AbCdEf123'.
+ * Leave empty to keep the in-app demo Join toggle.
+ */
+export const TELEGRAM_CIRCLE_URL = ''

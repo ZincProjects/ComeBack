@@ -1,4 +1,4 @@
-import { AlertTriangle, Check as CheckIcon, Info, ShieldCheck, Stethoscope } from 'lucide-react'
+import { AlertTriangle, ArrowRight, Check as CheckIcon, Info, ShieldCheck, Stethoscope } from 'lucide-react'
 import { CHECK_ITEMS } from '../data'
 import { useApp } from '../state'
 import { Card, cx, PageHeading, SectionTitle } from '../components/ui'
@@ -42,7 +42,7 @@ function ResultCard({ count }: { count: number }) {
 }
 
 export function CheckMain() {
-  const { checks, toggleCheck } = useApp()
+  const { checks, toggleCheck, setTab } = useApp()
   const count = checks.filter(Boolean).length
   return (
     <div className="flex flex-col gap-5">
@@ -87,6 +87,14 @@ export function CheckMain() {
             TCM and massage can ease pain and swelling, but they cannot repair a torn ligament. Only a doctor's
             exam and a scan can confirm it.
           </p>
+          <button
+            type="button"
+            onClick={() => setTab('learn')}
+            className="mt-2 inline-flex min-h-11 items-center gap-1.5 font-bold text-teal underline underline-offset-2"
+          >
+            Learn what an ACL tear is
+            <ArrowRight className="h-4 w-4" aria-hidden="true" />
+          </button>
         </div>
       </Card>
 

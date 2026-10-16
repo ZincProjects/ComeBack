@@ -47,7 +47,7 @@ export function MobileShell({ framed = false }: { framed?: boolean }) {
         className={cx('z-20 border-t border-line bg-white', !framed && 'fixed inset-x-0 bottom-0')}
         style={{ paddingBottom: framed ? 8 : 'env(safe-area-inset-bottom)' }}
       >
-        <ul className="mx-auto grid max-w-[640px] grid-cols-4">
+        <ul className="mx-auto grid max-w-[640px] grid-cols-5">
           {TABS.map((t) => {
             const Icon = TAB_ICONS[t.id]
             const active = tab === t.id
@@ -66,7 +66,7 @@ export function MobileShell({ framed = false }: { framed?: boolean }) {
                   )}
                 >
                   <span
-                    className={cx('grid h-8 w-14 place-items-center rounded-full', active && 'bg-teal-soft')}
+                    className={cx('grid h-8 w-12 place-items-center rounded-full', active && 'bg-teal-soft')}
                     aria-hidden="true"
                   >
                     <Icon className="h-5 w-5" strokeWidth={active ? 2.5 : 2} />

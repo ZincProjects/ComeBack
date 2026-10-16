@@ -1,6 +1,6 @@
 import { CalendarDays, Send, Users } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { PEER_GROUPS, QUICK_REPLIES } from '../data'
+import { PEER_GROUPS, QUICK_REPLIES, TELEGRAM_CIRCLE_URL } from '../data'
 import { useApp } from '../state'
 import { Card, cx, PageHeading, SectionTitle } from '../components/ui'
 
@@ -31,18 +31,40 @@ export function CircleCard() {
           <p className="mt-1 text-sm text-muted">8 student athletes · weekly check-in Thu 8pm · park workout Sat 9am</p>
         </div>
       </div>
-      <button
-        type="button"
-        aria-pressed={joined}
-        aria-label={`Join ${CIRCLE}`}
-        onClick={() => toggleGroup(CIRCLE)}
-        className={cx(
-          'mt-3 min-h-11 w-full rounded-xl px-4 font-bold',
-          joined ? 'border border-teal bg-teal-soft text-teal' : 'bg-teal text-white',
-        )}
-      >
-        {joined ? 'Joined ✓' : 'Join'}
-      </button>
+      {TELEGRAM_CIRCLE_URL ? (
+        <>
+          <a
+            href={TELEGRAM_CIRCLE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => !joined && toggleGroup(CIRCLE)}
+            className={cx(
+              'mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-4 font-bold',
+              joined ? 'border border-teal bg-teal-soft text-teal' : 'bg-teal text-white',
+            )}
+          >
+            <Send className="h-4 w-4" aria-hidden="true" />
+            {joined ? 'Open the group chat' : 'Join on Telegram'}
+            <span className="sr-only">(opens Telegram in a new tab)</span>
+          </a>
+          <p className="mt-2 text-sm text-muted">
+            Use a nickname if you like. Other members can't see your phone number.
+          </p>
+        </>
+      ) : (
+        <button
+          type="button"
+          aria-pressed={joined}
+          aria-label={`Join ${CIRCLE}`}
+          onClick={() => toggleGroup(CIRCLE)}
+          className={cx(
+            'mt-3 min-h-11 w-full rounded-xl px-4 font-bold',
+            joined ? 'border border-teal bg-teal-soft text-teal' : 'bg-teal text-white',
+          )}
+        >
+          {joined ? 'Joined ✓' : 'Join'}
+        </button>
+      )}
     </Card>
   )
 }
